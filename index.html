@@ -1,0 +1,780 @@
+<html lang="es"><head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ZapassNova - Formulario de Pedido</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/4.1.1/crypto-js.min.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        
+        body {
+            background: linear-gradient(135deg, #6a11cb 0%, #2575fc 100%);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            padding: 20px;
+        }
+        
+        .container {
+            background-color: rgba(255, 255, 255, 0.95);
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15);
+            width: 100%;
+            max-width: 500px;
+            padding: 40px;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .container::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 5px;
+            background: linear-gradient(90deg, #6a11cb, #2575fc);
+        }
+        
+        .logo {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        
+        .logo h1 {
+            font-size: 32px;
+            color: #333;
+            font-weight: 700;
+            letter-spacing: 1px;
+            margin-bottom: 5px;
+        }
+        
+        .logo p {
+            color: #6a11cb;
+            font-size: 14px;
+            font-weight: 500;
+        }
+        
+        .form-group {
+            margin-bottom: 25px;
+            position: relative;
+        }
+        
+        label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: #444;
+            font-size: 14px;
+        }
+        
+        .input-with-icon {
+            position: relative;
+        }
+        
+        .input-with-icon i {
+            position: absolute;
+            left: 15px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: #6a11cb;
+        }
+        
+        input[type="text"],
+        input[type="email"],
+        input[type="tel"],
+        select {
+            width: 100%;
+            padding: 15px 15px 15px 45px;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            font-size: 16px;
+            transition: all 0.3s;
+        }
+        
+        input:focus,
+        select:focus {
+            border-color: #6a11cb;
+            outline: none;
+            box-shadow: 0 0 0 3px rgba(106, 17, 203, 0.2);
+        }
+        
+        .error {
+            color: #e74c3c;
+            font-size: 13px;
+            margin-top: 5px;
+            display: none;
+        }
+        
+        button {
+            background: linear-gradient(90deg, #6a11cb 0%, #2575fc 100%);
+            color: white;
+            border: none;
+            padding: 16px 20px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: 600;
+            width: 100%;
+            transition: all 0.3s;
+            box-shadow: 0 4px 15px rgba(106, 17, 203, 0.3);
+        }
+        
+        button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(106, 17, 203, 0.4);
+        }
+        
+        button:active {
+            transform: translateY(0);
+        }
+        
+        .success-message {
+            background-color: #d4edda;
+            color: #155724;
+            padding: 15px;
+            border-radius: 8px;
+            margin-top: 20px;
+            text-align: center;
+            display: none;
+            animation: fadeIn 0.5s;
+        }
+        
+        .error-message {
+            background-color: #f8d7da;
+            color: #721c24;
+            padding: 15px;
+            border-radius: 8px;
+            margin-top: 20px;
+            text-align: center;
+            display: none;
+            animation: fadeIn 0.5s;
+        }
+        
+        .shoe-size-options {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin-top: 10px;
+        }
+        
+        .shoe-size-option {
+            flex: 1 0 calc(10% - 10px);
+            text-align: center;
+        }
+        
+        .shoe-size-option input[type="radio"] {
+            display: none;
+        }
+        
+        .shoe-size-option label {
+            display: block;
+            padding: 10px 5px;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.2s;
+            font-weight: normal;
+        }
+        
+        .shoe-size-option input[type="radio"]:checked + label {
+            border-color: #6a11cb;
+            background-color: rgba(106, 17, 203, 0.1);
+            font-weight: 600;
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+        
+        .loading {
+            display: none;
+            text-align: center;
+            margin-top: 20px;
+        }
+        
+        .loading-spinner {
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid #6a11cb;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto;
+        }
+        
+        @keyframes spin {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); }
+        }
+        
+        .security-note {
+            text-align: center;
+            font-size: 12px;
+            color: #777;
+            margin-top: 20px;
+        }
+        
+        .security-note i {
+            color: #6a11cb;
+            margin-right: 5px;
+        }
+        
+        .phone-prefix {
+            position: absolute;
+            left: 45px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: #555;
+            font-weight: 500;
+            pointer-events: none;
+        }
+        
+        .phone-input {
+            padding-left: 75px !important;
+        }
+        
+        .product-name {
+            margin-top: 8px;
+            font-size: 14px;
+            color: #6a11cb;
+            font-weight: 500;
+            display: none;
+        }
+        
+        /* Modal de términos y condiciones */
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.7);
+            animation: fadeIn 0.3s;
+        }
+        
+        .modal-content {
+            background-color: #fefefe;
+            margin: 5% auto;
+            padding: 30px;
+            border-radius: 15px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+            width: 90%;
+            max-width: 600px;
+            max-height: 80vh;
+            overflow-y: auto;
+            position: relative;
+        }
+        
+        .close {
+            color: #aaa;
+            float: right;
+            font-size: 28px;
+            font-weight: bold;
+            position: absolute;
+            right: 20px;
+            top: 15px;
+        }
+        
+        .close:hover,
+        .close:focus {
+            color: #6a11cb;
+            text-decoration: none;
+            cursor: pointer;
+        }
+        
+        .modal-title {
+            color: #6a11cb;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+        
+        .terms-content {
+            line-height: 1.6;
+        }
+        
+        .terms-content h3 {
+            color: #333;
+            margin: 15px 0 10px;
+        }
+        
+        .terms-content p {
+            margin-bottom: 15px;
+            color: #555;
+        }
+        
+        .terms-content ul {
+            margin-left: 20px;
+            margin-bottom: 15px;
+        }
+        
+        .terms-content li {
+            margin-bottom: 8px;
+        }
+        
+        .terms-accept {
+            margin-top: 20px;
+            text-align: center;
+        }
+        
+        .terms-link {
+            text-align: center;
+            margin-top: 15px;
+            font-size: 14px;
+        }
+        
+        .terms-link a {
+            color: #6a11cb;
+            text-decoration: none;
+            cursor: pointer;
+        }
+        
+        .terms-link a:hover {
+            text-decoration: underline;
+        }
+    </style>
+</head>
+<body>
+    <!-- Modal de Términos y Condiciones -->
+    <div id="termsModal" class="modal" style="display: none;">
+        <div class="modal-content">
+            <span class="close">×</span>
+            <h2 class="modal-title">Términos y Condiciones - Política de Privacidad</h2>
+            <div class="terms-content">
+                <p>Al utilizar nuestro formulario de pedido, aceptas los siguientes términos y condiciones:</p>
+                
+                <h3>1. Recopilación de Datos</h3>
+                <p>Recopilamos la información que nos proporcionas a través de este formulario, incluyendo:</p>
+                <ul>
+                    <li>Nombre completo</li>
+                    <li>Dirección de correo electrónico</li>
+                    <li>Número de teléfono</li>
+                    <li>Talla de calzado</li>
+                    <li>Información del producto solicitado</li>
+                </ul>
+                
+                <h3>2. Uso de la Información</h3>
+                <p>Utilizamos tu información para:</p>
+                <ul>
+                    <li>Procesar y gestionar tu pedido</li>
+                    <li>Comunicarnos contigo sobre tu pedido</li>
+                    <li>Enviar actualizaciones y información relevante sobre nuestros productos</li>
+                </ul>
+                
+                <h3>3. Protección de Datos</h3>
+                <p>Toda la información que nos proporcionas se cifra utilizando tecnología AES-256 antes de ser transmitida. 
+                   Esto garantiza que tus datos personales estén protegidos durante la transmisión.</p>
+                
+                <h3>4. Almacenamiento Seguro</h3>
+                <p>Los datos cifrados se almacenan de forma segura y solo el personal autorizado tiene acceso a la clave de descifrado.</p>
+                
+                <h3>5. Compartir Información</h3>
+                <p>No compartimos tu información personal con terceros, excepto cuando sea necesario para el procesamiento de tu pedido 
+                   o cuando lo requiera la ley.</p>
+                
+                <h3>6. Tus Derechos</h3>
+                <p>Tienes derecho a:</p>
+                <ul>
+                    <li>Acceder a la información que tenemos sobre ti</li>
+                    <li>Solicitar la corrección de datos inexactos</li>
+                    <li>Solicitar la eliminación de tus datos personales</li>
+                    <li>Oponerte al procesamiento de tus datos</li>
+                </ul>
+                
+                <div class="terms-accept">
+                    <button id="acceptTerms" class="accept-btn">Acepto los Términos y Condiciones</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="container">
+        <div class="logo">
+            <h1>ZapassNova</h1>
+            <p>ZapassNova la mejor calidad</p>
+        </div>
+        
+        <form id="orderForm">
+            <div class="form-group">
+                <label for="fullName">Nombre completo</label>
+                <div class="input-with-icon">
+                    <i class="fas fa-user"></i>
+                    <input type="text" id="fullName" name="fullName" placeholder="Ej: Juan Pérez García" required="">
+                </div>
+                <div class="error" id="nameError">Por favor ingrese un nombre completo válido (mínimo 3 caracteres)</div>
+            </div>
+            
+            <div class="form-group">
+                <label for="email">Correo Electrónico</label>
+                <div class="input-with-icon">
+                    <i class="fas fa-envelope"></i>
+                    <input type="email" id="email" name="email" placeholder="Ej: ejemplo@correo.com" required="">
+                </div>
+                <div class="error" id="emailError">Por favor ingrese un correo electrónico válido</div>
+            </div>
+            
+            <div class="form-group">
+                <label for="phone">Número de teléfono</label>
+                <div class="input-with-icon">
+                    <i class="fas fa-phone"></i>
+                    <span class="phone-prefix">+34</span>
+                    <input type="tel" id="phone" name="phone" class="phone-input" placeholder="XXX XXX XXX" required="">
+                </div>
+                <div class="error" id="phoneError">Por favor ingrese un número español válido (9 dígitos después del +34)</div>
+            </div>
+            
+            <div class="form-group">
+                <label>Talla de zapatos</label>
+                <div class="shoe-size-options" id="shoeSizeOptions">
+                    <!-- Las tallas se generarán con JavaScript -->
+                <div class="shoe-size-option">
+                <input type="radio" id="size35" name="shoeSize" value="35">
+                <label for="size35">35</label>
+            </div><div class="shoe-size-option">
+                <input type="radio" id="size36" name="shoeSize" value="36">
+                <label for="size36">36</label>
+            </div><div class="shoe-size-option">
+                <input type="radio" id="size37" name="shoeSize" value="37">
+                <label for="size37">37</label>
+            </div><div class="shoe-size-option">
+                <input type="radio" id="size38" name="shoeSize" value="38">
+                <label for="size38">38</label>
+            </div><div class="shoe-size-option">
+                <input type="radio" id="size39" name="shoeSize" value="39">
+                <label for="size39">39</label>
+            </div><div class="shoe-size-option">
+                <input type="radio" id="size40" name="shoeSize" value="40">
+                <label for="size40">40</label>
+            </div><div class="shoe-size-option">
+                <input type="radio" id="size41" name="shoeSize" value="41">
+                <label for="size41">41</label>
+            </div><div class="shoe-size-option">
+                <input type="radio" id="size42" name="shoeSize" value="42">
+                <label for="size42">42</label>
+            </div><div class="shoe-size-option">
+                <input type="radio" id="size43" name="shoeSize" value="43">
+                <label for="size43">43</label>
+            </div><div class="shoe-size-option">
+                <input type="radio" id="size44" name="shoeSize" value="44">
+                <label for="size44">44</label>
+            </div><div class="shoe-size-option">
+                <input type="radio" id="size45" name="shoeSize" value="45">
+                <label for="size45">45</label>
+            </div></div>
+                <div class="error" id="sizeError">Por favor seleccione una talla</div>
+            </div>
+            
+            <div class="form-group">
+                <label for="productId">Producto ID</label>
+                <div class="input-with-icon">
+                    <i class="fas fa-barcode"></i>
+                    <input type="text" id="productId" name="productId" placeholder="Ej: PP981X" required="">
+                </div>
+                <div id="productName" class="product-name"></div>
+                <div class="error" id="productError">Por favor ingrese un ID de producto válido</div>
+            </div>
+            
+            <button type="submit" id="submitBtn">
+                <i class="fas fa-paper-plane"></i> Enviar Pedido
+            </button>
+        </form>
+        
+        <div class="loading" id="loading">
+            <div class="loading-spinner"></div>
+            <p>Enviando datos cifrados de forma segura...</p>
+        </div>
+        
+        <div class="success-message" id="successMessage">
+            <i class="fas fa-check-circle"></i> ¡Formulario enviado correctamente! Los datos han sido enviados de forma segura.
+        </div>
+        
+        <div class="error-message" id="errorMessage">
+            <i class="fas fa-exclamation-circle"></i> <span id="errorText">Error al enviar el formulario. Por favor, intente nuevamente.</span>
+        </div>
+        
+        <div class="security-note">
+            <p><i class="fas fa-lock"></i> Todos los datos se transmiten de forma cifrada con AES-256</p>
+        </div>
+        
+        <div class="terms-link">
+            <a id="viewTerms">Ver Términos y Condiciones</a>
+        </div>
+    </div>
+
+    <script>
+        // Variable global para almacenar los datos de productos
+        let productData = [];
+        let termsAccepted = false;
+        
+        // Clave secreta para cifrado (en un caso real, esto debería manejarse en el backend)
+        const secretKey = "ZapassNovaSecureKey2023!";
+        
+        // Función para cifrar datos
+        function encryptData(data) {
+            return CryptoJS.AES.encrypt(JSON.stringify(data), secretKey).toString();
+        }
+        
+        // Mostrar modal de términos al cargar la página
+        document.addEventListener('DOMContentLoaded', function() {
+            const modal = document.getElementById('termsModal');
+            modal.style.display = 'block';
+            
+            // Cargar datos de productos después de mostrar los términos
+            loadProductData();
+        });
+        
+        // Cerrar modal al hacer clic en la X
+        document.querySelector('.close').addEventListener('click', function() {
+            document.getElementById('termsModal').style.display = 'none';
+        });
+        
+        // Aceptar términos y condiciones
+        document.getElementById('acceptTerms').addEventListener('click', function() {
+            termsAccepted = true;
+            document.getElementById('termsModal').style.display = 'none';
+        });
+        
+        // Abrir términos y condiciones
+        document.getElementById('viewTerms').addEventListener('click', function() {
+            document.getElementById('termsModal').style.display = 'block';
+        });
+        
+        // Cargar datos de productos desde la API
+        async function loadProductData() {
+            try {
+                const response = await fetch('https://raw.githubusercontent.com/dcvxk/ZapassNova.github.io/main/ZapassNova.json');
+                const jsonData = await response.json();
+                productData = jsonData.ZapassNova || [];
+                console.log('Datos de productos cargados:', productData);
+            } catch (error) {
+                console.error('Error cargando datos de productos:', error);
+            }
+        }
+        
+        // Buscar nombre del producto por ID
+        function getProductName(productId) {
+            if (!productData || productData.length === 0) {
+                return null;
+            }
+            
+            // Buscar en todos los productos
+            const product = productData.find(p => p.ID === productId);
+            return product ? product.nombre : null;
+        }
+        
+        // Generar opciones de tallas de zapatos (35-45)
+        const shoeSizeContainer = document.getElementById('shoeSizeOptions');
+        for (let i = 35; i <= 45; i++) {
+            const sizeOption = document.createElement('div');
+            sizeOption.className = 'shoe-size-option';
+            sizeOption.innerHTML = `
+                <input type="radio" id="size${i}" name="shoeSize" value="${i}">
+                <label for="size${i}">${i}</label>
+            `;
+            shoeSizeContainer.appendChild(sizeOption);
+        }
+
+        // Validación y envío del formulario
+        document.getElementById('orderForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            
+            // Verificar si se aceptaron los términos
+            if (!termsAccepted) {
+                alert("Debe aceptar los términos y condiciones primero");
+                document.getElementById('termsModal').style.display = 'block';
+                return;
+            }
+            
+            // Reset mensajes
+            document.querySelectorAll('.error').forEach(error => {
+                error.style.display = 'none';
+            });
+            document.getElementById('errorMessage').style.display = 'none';
+            document.getElementById('successMessage').style.display = 'none';
+            
+            let isValid = true;
+            
+            // Validar nombre
+            const fullName = document.getElementById('fullName').value.trim();
+            if (fullName.length < 3) {
+                document.getElementById('nameError').style.display = 'block';
+                isValid = false;
+            }
+            
+            // Validar email
+            const email = document.getElementById('email').value.trim();
+            const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+            if (!emailPattern.test(email)) {
+                document.getElementById('emailError').style.display = 'block';
+                isValid = false;
+            }
+            
+            // Validar teléfono (sólo números españoles)
+            const phoneInput = document.getElementById('phone').value.trim();
+            const phonePattern = /^\d{9}$/;
+            const digitsOnly = phoneInput.replace(/\D/g, '');
+            
+            if (!phonePattern.test(digitsOnly)) {
+                document.getElementById('phoneError').style.display = 'block';
+                isValid = false;
+            }
+            
+            // Validar talla
+            const shoeSize = document.querySelector('input[name="shoeSize"]:checked');
+            if (!shoeSize) {
+                document.getElementById('sizeError').style.display = 'block';
+                isValid = false;
+            }
+            
+            // Validar ID producto
+            const productId = document.getElementById('productId').value.trim();
+            if (productId.length === 0) {
+                document.getElementById('productError').style.display = 'block';
+                isValid = false;
+            }
+            
+            if (isValid) {
+                // Mostrar carga
+                document.getElementById('loading').style.display = 'block';
+                document.getElementById('submitBtn').disabled = true;
+                
+                try {
+                    // Combinar el prefijo +34 con el número
+                    const fullPhone = '+34 ' + digitsOnly.replace(/(\d{3})?(\d{3})?(\d{3})/, '$1 $2 $3').trim();
+                    
+                    // Obtener nombre del producto
+                    const productName = getProductName(productId);
+                    if (!productName) {
+                        throw new Error('ID de producto no válido');
+                    }
+                    
+                    // Configuración para Telegram (token y chat ID proporcionados)
+                    const botToken = '8273225633:AAEJZuTfIiGIC2XrfKKFiLTCT9fuu4OI7q8';
+                    const chatId = '7502264379';
+                    
+                    // Crear objeto con los datos a enviar
+                    const formData = {
+                        fullName: fullName,
+                        email: email,
+                        phone: fullPhone,
+                        shoeSize: shoeSize.value,
+                        productId: productId,
+                        productName: productName,
+                        timestamp: new Date().toISOString()
+                    };
+                    
+                    // Cifrar los datos antes de enviarlos
+                    const encryptedData = encryptData(formData);
+                    
+                    // Mensaje formateado para Telegram (solo con el nombre del producto)
+                    const message = `🛍️ *Nuevo Pedido ZapassNova* 🛍️%0A%0A👤 *Cliente:* ${encodeURIComponent(fullName)}%0A📧 *Email:* ${encodeURIComponent(email)}%0A📞 *Teléfono:* ${encodeURIComponent(fullPhone)}%0A👟 *Talla:* ${encodeURIComponent(shoeSize.value)}%0A📦 *Producto:* ${encodeURIComponent(productName)}%0A%0A🔐 *Datos cifrados:* ${encodeURIComponent(encryptedData)}%0A%0A✅ _Datos recibidos correctamente_`;
+                    
+                    // URL para enviar mensaje a través de la API de Telegram
+                    const telegramUrl = `https://api.telegram.org/bot${botToken}/sendMessage?chat_id=${chatId}&text=${message}&parse_mode=Markdown`;
+                    
+                    // Enviar solicitud a la API de Telegram
+                    const response = await fetch(telegramUrl);
+                    const data = await response.json();
+                    
+                    if (data.ok) {
+                        // Éxito
+                        document.getElementById('loading').style.display = 'none';
+                        document.getElementById('successMessage').style.display = 'block';
+                        document.getElementById('orderForm').reset();
+                        document.getElementById('productName').style.display = 'none';
+                        
+                        // Ocultar mensaje después de 4 segundos
+                        setTimeout(() => {
+                            document.getElementById('successMessage').style.display = 'none';
+                        }, 4000);
+                    } else {
+                        // Error de Telegram
+                        throw new Error('Error en la API de Telegram: ' + data.description);
+                    }
+                    
+                } catch (error) {
+                    console.error('Error:', error);
+                    document.getElementById('loading').style.display = 'none';
+                    document.getElementById('errorText').textContent = 'Error al enviar el formulario: ' + error.message;
+                    document.getElementById('errorMessage').style.display = 'block';
+                    
+                    if (error.message.includes('ID de producto')) {
+                        document.getElementById('productError').textContent = 'ID de producto no válido. Use PP981X, 9X7B2C o 4M5QZ8';
+                        document.getElementById('productError').style.display = 'block';
+                    }
+                } finally {
+                    document.getElementById('submitBtn').disabled = false;
+                }
+            }
+        });
+
+        // Mostrar nombre del producto cuando se ingresa el ID
+        document.getElementById('productId').addEventListener('input', async function(e) {
+            const productId = e.target.value.trim();
+            const productNameElement = document.getElementById('productName');
+            
+            if (productId.length > 0) {
+                // Si aún no tenemos los datos de productos, cargarlos
+                if (productData.length === 0) {
+                    await loadProductData();
+                }
+                
+                const productName = getProductName(productId);
+                if (productName) {
+                    productNameElement.textContent = `Producto: ${productName}`;
+                    productNameElement.style.color = '#6a11cb';
+                    productNameElement.style.display = 'block';
+                } else {
+                    productNameElement.textContent = 'ID no encontrado. Pruebe con: PP981X, 9X7B2C o 4M5QZ8';
+                    productNameElement.style.color = '#e74c3c';
+                    productNameElement.style.display = 'block';
+                }
+            } else {
+                productNameElement.style.display = 'none';
+            }
+        });
+
+        // Formatear automáticamente el número de teléfono (solo los 9 dígitos)
+        document.getElementById('phone').addEventListener('input', function(e) {
+            let value = e.target.value.replace(/\D/g, '');
+            
+            // Limitar a 9 dígitos
+            if (value.length > 9) {
+                value = value.substring(0, 9);
+            }
+            
+            // Aplicar formato XXX XXX XXX
+            if (value.length > 6) {
+                value = value.substring(0, 6) + ' ' + value.substring(6);
+            }
+            if (value.length > 3) {
+                value = value.substring(0, 3) + ' ' + value.substring(3);
+            }
+            
+            e.target.value = value;
+        });
+
+        // Prevenir que el usuario borre el prefijo +34
+        document.getElementById('phone').addEventListener('keydown', function(e) {
+            // Permitir navegación y acciones normales
+            if (['ArrowLeft', 'ArrowRight', 'Tab', 'Delete', 'Backspace'].includes(e.key)) {
+                return;
+            }
+            
+            // Prevenir entrada de caracteres no numéricos
+            if (!/\d/.test(e.key) && e.key !== ' ') {
+                e.preventDefault();
+            }
+        });
+    </script>
+
+</body></html>
